@@ -1,0 +1,26 @@
+[workspace]
+members = [".", "solang-diff-contracts/counter_rs"]
+resolver = "2"
+
+[package]
+name = "solang-diff"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "solang-diff"
+path = "src/main.rs"
+required-features = ["soroban"]
+
+[features]
+soroban = ["dep:soroban-sdk"]
+
+[dependencies]
+soroban-sdk = { version = "22.0.7", features = ["testutils"], optional = true }
+tempfile = "3"
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+opt-level = 3
