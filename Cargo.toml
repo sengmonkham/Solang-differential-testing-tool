@@ -23,4 +23,10 @@ tempfile = "3"
 opt-level = 1
 
 [profile.release]
-opt-level = 3
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+panic = "abort"
+codegen-units = 1
+lto = true
