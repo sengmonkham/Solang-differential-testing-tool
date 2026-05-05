@@ -63,8 +63,7 @@ solang-diff/
 │   └── counter_rs/                        ← Rust reference contract
 │       ├── Cargo.toml
 │       └── src/lib.rs
-├── build-and-run.sh                       ← one-shot helper
-├── guide.md                               ← implementation guide
+├── build-and-run.sh                       ← one-shot helper                            
 └── README.md
 ```
 
