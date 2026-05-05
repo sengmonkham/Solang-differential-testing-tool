@@ -10,15 +10,15 @@ A prototype differential testing tool for [Hyperledger Solang](https://github.co
 [2/4] Loading Rust SDK counter WASM...
       ✓ WASM size: 2,870 bytes   ← Rust SDK output
 
-┌─────────────────────────┬────────────────────┬────────────────────┐
-│  increment()            │  Solang (Solidity)  │  Rust SDK          │
-├─────────────────────────┼────────────────────┼────────────────────┤
-│  CPU Instructions       │  450,295            │  552,493            │
-│  Memory (bytes)         │  1,166,373          │  1,176,867          │
+┌─────────────────────────┬────────────────────-┬───────────────────┐
+│  increment()            │  Solang (Solidity)  │  Rust SDK         │
+├─────────────────────────┼───────────────────-─┼───────────────────┤
+│  CPU Instructions       │  450,295            │  552,493          │
+│  Memory (bytes)         │  1,166,373          │  1,176,867        │
 │  Return value match     │  ✓ yes                                  │
-├─────────────────────────┴────────────────────┴────────────────────┤
-│  Overhead:  0.82× CPU   0.99× memory                           │
-└──────────────────────────────────────────────────────────────────────┘
+├─────────────────────────┴──────────────────-──┴───────────────────┤
+│  Overhead:  0.82× CPU   0.99× memory                              │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 Both contracts are deployed to the same `soroban-sdk` mock VM. The `testutils` budget API measures CPU instructions and memory bytes consumed per invocation.
