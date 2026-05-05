@@ -75,13 +75,3 @@ solang-diff/
 4. **Measure**: For each function (`increment`, `get`), calls `budget.reset_default()` then `env.invoke_contract()`, then reads `budget.cpu_instruction_cost()` and `budget.memory_bytes_cost()`.
 5. **Report**: Prints a formatted table with ratio (`Overhead: Nx CPU`).
 
-## Dependency notes
-
-| Crate | Version | Purpose |
-|-------|---------|---------|
-| `soroban-sdk` | `22.0.7` | Mock VM + `testutils` budget API |
-| `tempfile` | `3` | Temp file for passing Solidity to the CLI |
-| `solang` (binary) | `0.3.4` | Compiles Solidity → Soroban WASM (via CLI) |
-
-The `solang` Rust *library* is intentionally **not** used as a dependency — it requires a Solana-fork of LLVM 16 to link, which is not available via Homebrew. Using the pre-built `solang` binary sidesteps this entirely.
-
