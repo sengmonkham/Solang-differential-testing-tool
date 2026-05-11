@@ -23,7 +23,6 @@ A prototype differential testing tool for [Hyperledger Solang](https://github.co
 
 Both contracts are deployed to the same `soroban-sdk` mock VM. The `testutils` budget API measures CPU instructions and memory bytes consumed per invocation.
 
-> **Key finding:** In the mock VM environment, the Solang-compiled Solidity counter uses *fewer* CPU instructions than the Rust SDK equivalent (~0.82×). This is an interesting result for the mentorship evaluation — it suggests Solang's optimizer produces efficient WASM for simple storage patterns, though the delta may change under more complex contracts or on the real network.
 
 ## Prerequisites
 
