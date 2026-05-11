@@ -2,6 +2,7 @@ use soroban_sdk::testutils::budget::Budget;
 use soroban_sdk::{vec as soroban_vec, Address, Env, Symbol, Val};
 use std::io::Write;
 
+// A simple Solidity counter contract used for comparative testing
 const COUNTER_SOL: &str = r#"
 contract counter {
     uint64 public count = 0;
@@ -17,7 +18,11 @@ contract counter {
 }
 "#;
 
+/// Compiles a Solidity source string into a WASM binary using the Solang compiler.
+/// This function creates a temporary file for the source, invokes the `solang` CLI,
+/// and reads the resulting compiled WebAssembly.
 fn compile_solidity(src: &str) -> (Vec<u8>, String) {
+    // Create a temporary file to hold the Solidity source code
     let mut sol_file =
         tempfile::NamedTempFile::with_suffix(".sol").expect("could not create temp file");
     sol_file
@@ -25,11 +30,14 @@ fn compile_solidity(src: &str) -> (Vec<u8>, String) {
         .expect("could not write source");
     let sol_path = sol_file.path().to_path_buf();
 
+    // Set up a temporary directory for the compiler output
     let out_dir = tempfile::tempdir().expect("could not create output dir");
     let out_path = out_dir.path().to_path_buf();
 
+    // Locate the solang binary, defaulting to "solang" if not specified in env
     let solang_bin = std::env::var("SOLANG_BIN").unwrap_or_else(|_| "solang".to_string());
 
+    // Execute the solang compiler, targeting the soroban environment
     let output = std::process::Command::new(&solang_bin)
         .args(["compile", "--target", "soroban",
                sol_path.to_str().unwrap(),
@@ -55,6 +63,7 @@ fn compile_solidity(src: &str) -> (Vec<u8>, String) {
         );
     }
 
+    // Parse the output directory to find the generated .wasm file
     let wasm_entry = std::fs::read_dir(&out_path)
         .unwrap()
         .filter_map(|e| e.ok())
@@ -69,6 +78,7 @@ fn compile_solidity(src: &str) -> (Vec<u8>, String) {
     (bytes, filename)
 }
 
+/// Helper function to load a pre-compiled Rust WASM binary from the file system.
 fn load_wasm(path: &str) -> Vec<u8> {
     std::fs::read(path).unwrap_or_else(|e| {
         eprintln!("ERROR: Could not read WASM at '{path}': {e}");
@@ -83,6 +93,8 @@ struct Metrics {
     return_val: Val,
 }
 
+/// Measures the execution cost (CPU instructions and memory) of a smart contract function.
+/// It uses the Soroban SDK's mock environment to estimate the budget required for the invocation.
 fn measure(env: &Env, addr: &Address, func_name: &str, extra_args: &[Val]) -> Metrics {
     let func = Symbol::new(env, func_name);
     let mut soroban_args = soroban_vec![env];
@@ -90,9 +102,11 @@ fn measure(env: &Env, addr: &Address, func_name: &str, extra_args: &[Val]) -> Me
         soroban_args.push_back(arg.clone());
     }
 
+    // Reset the mock VM's budget counters to 0 to measure only this specific invocation
     let mut budget: Budget = env.cost_estimate().budget();
     budget.reset_default();
 
+    // Invoke the contract function and capture its return value
     let return_val: Val = env.invoke_contract(addr, &func, soroban_args);
 
     Metrics {
@@ -102,15 +116,19 @@ fn measure(env: &Env, addr: &Address, func_name: &str, extra_args: &[Val]) -> Me
     }
 }
 
+/// Main entry point for the solang-diff prototype.
+/// Orchestrates the compilation, loading, execution, and cost comparison between
+/// the Solidity and Rust implementations of a contract.
 fn main() {
+    // Take the path to the rust SDK wasm from arguments or default to the target directory
     let rust_wasm_path = std::env::args()
         .nth(1)
         .unwrap_or_else(|| "target/wasm32-unknown-unknown/release/counter_rs.wasm".to_string());
 
-    println!("┌─────────────────────────────────────────────────────────┐");
+    println!("┌──────────────────────────────────────────────────────-───┐");
     println!("│              solang-diff  ·  Counter prototype           │");
     println!("│   Soroban mock-VM cost comparison: Solidity vs Rust SDK  │");
-    println!("└─────────────────────────────────────────────────────────┘");
+    println!("└───────────────────────────────────────────────────────-──┘");
 
     let env = Env::default();
 
@@ -150,6 +168,7 @@ fn main() {
     println!("\nNote: numbers reflect the soroban-sdk mock VM, not on-chain costs.");
 }
 
+/// Prints a formatted comparative report of the CPU and memory costs.
 fn print_report(func: &str, sol: &Metrics, rust: &Metrics) {
     let cpu_ratio = sol.cpu_insns as f64 / rust.cpu_insns.max(1) as f64;
     let mem_ratio = sol.mem_bytes as f64 / rust.mem_bytes.max(1) as f64;
